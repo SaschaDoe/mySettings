@@ -1,0 +1,118 @@
+let mapleader=" "
+
+" You can find a list of commands here: https://jb.gg/h38q75
+" Find more examples here: https://jb.gg/share-ideavimrc
+
+
+"" -- Suggested options --
+" Show a few lines of context around the cursor. Note that this makes the
+" text scroll if you mouse-click near the start or end of the window.
+set scrolloff=5
+
+" Do incremental searching.
+set incsearch
+
+set ideajoin
+set harpooner
+set sneak
+set multicursor
+set visualbell
+
+" Don't use Ex mode, use Q for formatting.
+map Q g
+
+" --- Enable IdeaVim plugins https://jb.gg/ideavim-plugins
+
+" Highlight copied text
+Plug 'machakann/vim-highlightedyank'
+" Commentary plugin
+Plug 'tpope/vim-commentary'
+
+
+if &ide =~? 'rider'
+  nmap <leader>c <Action>(RiderShowIncomingCalls)
+else
+  nmap <leader>c <Action>(CallHierarchy)
+endif
+
+nmap <leader>r <Action>(Refactorings.QuickListPopupAction)
+
+function! Invert(calledFromVisual)
+  let antonyms = ['true', 'false', 'after', 'before', 'start', 'end', 'left', 'right', 'first', 'last', 'if', 'else',
+                 \'True', 'False', 'After', 'Before', 'Start', 'End', 'Left', 'Right', 'First', 'Last', 'If', 'Else']
+
+  if a:calledFromVisual
+    normal gv"wy
+  else
+    normal "wyiw
+  endif
+  let wordUnderCaret = @w
+
+  let eraseWord = a:calledFromVisual ? 'gvc' : 'ciw'
+  let count = 0
+  while (count < len(antonyms))
+    if (antonyms[count] ==# wordUnderCaret)
+      let antonym = (count % 2 ==? 0) ? antonyms[count + 1] : antonyms[count - 1]
+      execute 'normal ' .. eraseWord .. antonym
+      break
+    endif
+    let count += 1
+  endwhile
+endfunction
+
+nnoremap gX :set opfunc=Redact<CR>g@
+nnoremap gx :set opfunc=function('Redact')<CR>g@
+nnoremap gy :set opfunc={arg -> execute "normal `[v`]rx"}<CR>g@
+function! Redact(type)
+    execute "normal `[v`]rx"
+endfunction
+
+nnoremap ! :call Invert(0)<CR>
+vnoremap ! :<C-u>call Invert(1)<CR>
+
+" Toggle case and start typing. E.g. `<leader>iget`: `property` -> `getProperty`
+map <leader>i b~hi
+
+map <leader>b <Action>(ToggleLineBreakpoint)
+map <leader>o <Action>(FileStructurePopup)
+map <leader>f <Action>(ReformatCode)
+map <leader>r <Action>(RenameElement)
+map <leader>a <Action>(Annotate)
+map <leader>h <Action>(Vcs.ShowTabbedFileHistory)
+
+nmap gb <Action>(Back)
+nmap gD <Action>(GotoTypeDeclaration)
+nmap gf <Action>(Forward)
+nmap gh <Action>(ShowHoverInfo)
+nmap gL <Action>(QuickImplementations)
+
+" refactor
+map <leader>v <Action>(IntroduceVariable)
+map <leader>em <Action>(ExtractMethod)
+
+" Harpoon
+map <leader>h1 :action HarpoonerOpenFile0<cr>
+map <leader>h2 :action HarpoonerOpenFile1<cr>
+map <leader>h3 :action HarpoonerOpenFile2<cr>
+map <leader>h4 :action HarpoonerOpenFile3<cr>
+map <leader>h5 :action HarpoonerOpenFile5<cr>
+
+map <leader>hm :action HarpoonerQuickMenu<cr>
+map <leader>ha :action HarpoonerAddFile<cr>
+
+inoremap jk <ESC>q
+
+nmap [[ <Action>(MethodUp)
+nmap ]] <Action>(MethodDown)
+
+nmap ]e <Action>(GotoNextError)
+nmap [e <Action>(GotoPreviousError)
+
+
+" Indent keeping selection
+vnoremap < <gv
+vnoremap > >gv
+vnoremap = =gv
+
+
+
